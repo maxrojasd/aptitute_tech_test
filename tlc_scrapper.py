@@ -55,13 +55,13 @@ def get_timeframe(init_year, init_month,final_year, final_month):
     
 # Input to ask for the date range
 ## Initial Date
-# print('Please enter the initial date in the format below')
-# init_year, init_month = get_input_date('initial')
+print('Please enter the initial date in the format below')
+init_year, init_month = get_input_date('initial')
 # ## Final Date
-# print('Please enter the final date in the format below')
-# final_year, final_month = get_input_date('final')
+print('Please enter the final date in the format below')
+final_year, final_month = get_input_date('final')
 # Get the timeframe for the data to be extracted
-timeframe = get_timeframe(2022, 1,2022, 3)
+timeframe = get_timeframe(init_year, init_month,final_year, final_month)
 # print(timeframe)
 # Configure the Selenium web driver
 driver = webdriver.Chrome()
