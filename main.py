@@ -4,7 +4,7 @@ import subprocess
 if __name__ == '__main__':
 
     # Specify scripts to run
-    scripts = ['tlc_scrapper.py', 'pyspark_code.py', 'unit_tests.py']
+    scripts = ['get_openaq_data.py', 'aws_code.py', 'unit_tests.py']
 
     # Try to Run scripts or send an error
     for script in scripts:

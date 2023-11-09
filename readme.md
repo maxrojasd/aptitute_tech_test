@@ -4,27 +4,87 @@ Script to get the top N records from a specific TLC line and fix the total amoun
 ## Pre-requirements
 In order to run the script, make sure to have the following:
 - Spark
-- Selenium
-- BeautifulSoup
+- boto3
+- s3fs
 - Request
 - pytest
 
 ## How-to-run
-Just run the main.py script
+Just run the main.py script and wil run script
 
 # Unit Test
-I've created the structure to implement unit tests for all the scripts and functions created. this can be found in unit_tests.py script and in unit_tests folder.
+Not Implemented this time, just included the framework
 
 ## The approach
 
-As the requirements was to dinamically download records from a specific timefrime given by the user, the best approach to do this I could think of, was to use Selenium and beautifulSoup, therefore, I've created the 'tlc_scrapper.py' script to download the specific parquet file to a desire folder.
+This code is intended to fetch data from openAQ, upload it to S3 and then create tables in Redshift to be able to provide a scalable solution for the BA team. 
 
-After having the download records, to understand and explore the data, I've created a support_notebook (you can find it in the root folder) to do the 'pyspark_code.py' and perform some EDA.
-
-From this analysis, I could noticed some data issues like negative or 0 values for the total amount, therefore, I've fixed them, also included handling null values. 
-
-I believe that there are many pain points in the data that affects the data quality, so, fixing the total_amount column to make sure the values are correct would involve more in-depth analysis to identify the root-cause for the errors. An example of this is the fact that there are 'Payment_type' that are not included in the numeric code in the [Yellow Trips Data Dictionary](https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf) provided by the TLC Trip Record Data.
-
-Given the nature of the data and that many columns affect the total_amount values, I prefered to create a custom orchestrator to run custom tests, because, for example if the data needs to be check by different vendors, payment type or geography it might have different limitants, for example, if a trip is from JFK it will have an extra fee that will affect the total amount directly, so if the fee is not charged for a trip in the area, it might pass some basic validations, but we will now that the actual value is incorrect.
+This solution works with serverless resources and in case is needed it is also working with cloud-based processing architecture considering the possibility to either run in public networks or VPCs. For this, the main storage service to be used is S3, where a cluster must be created to host the files that will be processed by the script, once the files are there, they will be transderred to Redshift to a specific table where the data can be reviewed by DAs 
 
 
+## The architecture
+
+The basic architecture for this project is intended to reduce costs, but with the consideration it might need to be scaled up when the demand is higher. As a starting point, the architecture only includes S3 and Redshift with the idea to automate some processes with AWS Lambda in a next stage.
+![](https://github.com/maxrojasd/aptitute_tech_test/blob/openaq_test/architecture.jpg?raw=true)
+
+## Data Quality
+
+There are some Data transformations needed in order to improve data quality, this includes:
+
+- Handling null values
+- Transform columns
+- Check Format
+- Duplication check
+
+## Data Schema
+
+Below is the Created Table schema.
+
++------------------------+------------------------+
+|      Column Name       |      Data Type         |
++------------------------+------------------------+
+| manufacturername       | character varying      |
+| modelname              | character varying      |
+| firstupdated           | character varying      |
+| lastupdated            | character varying      |
+| displayname            | character varying      |
+| parameter              | character varying      |
+| unit                   | character varying      |
+| bounds                 | character varying      |
+| firstupdated_record    | character varying      |
+| lastupdated_record     | character varying      |
+| sensortype             | character varying      |
+| isanalysis             | character varying      |
+| sources                | character varying      |
+| country                | character varying      |
+| entity                 | character varying      |
+| name                   | character varying      |
+| city                   | character varying      |
+| longitude              | double precision       |
+| latitude               | double precision       |
+| lastvalue              | double precision       |
+| average                | double precision       |
+| lastupdatedsecond_record | integer              |
+| lastupdatedminute_record | integer              |
+| lastupdatedhour_record  | integer               |
+| lastupdatedday_record   | integer               |
+| lastupdatedmonth_record | integer               |
+| lastupdatedyea_record   | integer               |
+| firstupdatedsecond_record | integer              |
+| firstupdatedminute_record | integer              |
+| firstupdatedhour_record  | integer               |
+| firstupdatedday_record   | integer               |
+| firstupdatedmonth_record | integer               |
+| firstupdatedyear_record  | integer               |
+| parameterid            | bigint                 |
+| count                  | bigint                 |
+| id                     | bigint                 |
+| measurements           | bigint                 |
+| id_record              | bigint                 |
+| ismobile               | boolean                |
++------------------------+------------------------+
+
+
+## Queries
+
+The Queries that were created as example can be found in the script sql_queries.py, these ones need to be refined.
