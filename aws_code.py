@@ -46,8 +46,8 @@ insert_sql= create_insert_statements(df, 'openaq_table')
 
 # Connect to RedShift
 redshift_data_client = boto3.client('redshift-data',
-                              aws_access_key_id = 'AKIAWLUOLVTOL737DU72',
-                              aws_secret_access_key = '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'
+                              aws_access_key_id = '',
+                              aws_secret_access_key = ''
                                )
 # Create new Table
 response = redshift_data_client.execute_statement(
