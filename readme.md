@@ -14,7 +14,7 @@ In order to run the script, make sure to have the following:
 Just run the main.py script and wil run script
 
 # Unit Test
-Not Implemented this time, just included the framework
+Implemented for Redshift & Pyspark Functions. They can be found in unit_tests folder
 
 ## The approach
 
