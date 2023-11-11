@@ -24,7 +24,7 @@ This solution works with serverless resources and in case is needed it is also w
 
 ## The architecture
 
-The basic architecture for this project is intended to reduce costs, but with the consideration it might need to be scaled up when the demand is higher. As a starting point, the architecture only includes S3 and Redshift with the idea to automate some processes with AWS Lambda in a next stage.
+The infrastructure is intended to be a simple solution intended to work with small datasets but with a scalable framework in case the volume of data increase considerably. the initial data goes from the file system to S3 in their RAW format
 ![](https://github.com/maxrojasd/aptitute_tech_test/blob/openaq_test/architecture.jpg?raw=true)
 
 ## Data Quality
