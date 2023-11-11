@@ -19,9 +19,6 @@ spark = SparkSession.builder.config(conf=conf).getOrCreate()
 input_folder = 'output'
 df = spark.read.parquet(input_folder)
 
-# Count the number of rows in the DataFrame
-records_count = df.count()
-print(f'Total number of records: {records_count}')
 
 # Connect to S3 in AWS (Replace variables accordingly)
 s3 = boto3.resource(
