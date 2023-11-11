@@ -1,5 +1,6 @@
-# TLC_Trip_Records_Service APP
-Script to get the top N records from a specific TLC line and fix the total amount of the trips.
+# openAQ_Service APP
+Script to Build a data mart hosted in redshift to enable BA to perform analysis on historical 2017 air quality
+measurements.
 
 ## Pre-requirements
 In order to run the script, make sure to have the following:
