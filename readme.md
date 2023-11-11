@@ -29,7 +29,7 @@ As the idea is to have a system with just a small sample dataset available for t
 The ETL works by reading data or files either from openAQ API or specific files, transform the data, create the table in redshift with the schema of the transformed table, then upload the table as a parquet file in a S3  bucket where it triggers a lambda function that updates the records from the parquet files in the previously created Redshift's Table in the data mart.
 
 
-![](https://github.com/maxrojasd/aptitute_tech_test/blob/openaq_test/architecture.jpg?raw=true)
+![](https://github.com/maxrojasd/aptitute_tech_test/blob/openaq_test/img/diagram1.png)
 
 
 - Python Scripts: There is a API framework to run custom operations using boto3 to interact directly between pyspark and AWS services, it also includes the possibility of an orchestrator for higly customizable python scripts, in case the complexity of the architecture increase given the nature of the demand for the Cloud-based solution. At a first stage this will run a crawler to get the data and upload it to S3 and create the corresponding redshift table on the cluster.
@@ -52,10 +52,11 @@ Considering this number of requests for all the other services that are activate
 
 In case the Redshift Cluster is serverless:
 
-SCREENSHOT HERE
+![](https://github.com/maxrojasd/aptitute_tech_test/blob/openaq_test/img/cost1.png)
 
 In case the Redshift Cluster is not serverless:
 
+![](https://github.com/maxrojasd/aptitute_tech_test/blob/openaq_test/img/cost.png)
 
 Here it is the biggest difference for the total costs of the solution as it is right now. 
 
@@ -63,7 +64,7 @@ Here it is the biggest difference for the total costs of the solution as it is r
 AS the solution requires more and more resources the solution's next step that I proposed is the the one in the diagram below.
 
 
-SCREENSHOT HERE
+![](https://github.com/maxrojasd/aptitute_tech_test/blob/openaq_test/img/diagram2.png)
 
 What are the upgrades? It would include AWS Glue in order to democratise the ETL Process between S3 and Redshift avoiding potential errors as it will include a schema validation & transformation process. It will also allow to the system the possibility of distribute the data between different data marts and data sources given the needs. 
 
@@ -72,6 +73,8 @@ It would kick-off each time when receives a file in S3, where it will then run a
 This option will demand more running time than the first option, therefore, if the running time of the architecture implemented is not even close to the GLUE ETL one, it will be more costly to run than the first option.
 
 The advantage of this one, is the scalability as it will work more efficienly with several GBs of workload rather than the previous option that will be slower when the volume of data gets to this levels.
+
+
 
 Costs:
 
@@ -82,6 +85,11 @@ This solution Includes:
 - 1 Redshift dedicated cluster (dc2.large) total use 1 hour/day 
 - 100000 Eventbridge events
 
+![](https://github.com/maxrojasd/aptitute_tech_test/blob/openaq_test/img/cost3.png)
+
+## Configurations
+
+Many of the configurations are in the folder img/screenshots_config. It would be ideal to include IAC wtih Terraform or similar in a future stage.
 
 ## Data Quality
 
@@ -92,7 +100,6 @@ There are some Data transformations needed in order to improve data quality, thi
 - Transform columns
 - Check Format
 - Duplication check
-
 
 There was also some columns that were removed as they were either duplicated or present irrelevant data: those are the following:
 
@@ -106,7 +113,8 @@ There was also some columns that were removed as they were either duplicated or 
 
 The Schema created in Redshift can be found in the screenshot below 
 
-SCREENSHOT HERE
+
+![](https://github.com/maxrojasd/aptitute_tech_test/blob/openaq_test/img/schema.png)
 
 
 ## Queries
