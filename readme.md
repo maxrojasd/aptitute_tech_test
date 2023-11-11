@@ -124,7 +124,9 @@ The Queries are written below for SQL queries. There is also a script that inclu
 
 
 ### query 1
-
+For any given month find all cities with average monthly levels of carbon
+monoxide (CO) and sulphur dioxide pollution (SO2) in the 90th percentile
+globally.
 ```
 WITH percentile_table AS (SELECT
     month, location,city,pollutant,date, avg(value) as average,
@@ -146,7 +148,8 @@ percentile_table."month" = '08'
 
 
 ### query 2
-
+For any given day find the top 5 cities globally with the highest daily average levels of
+particle air pollution (PM2.5).
 ```
 WITH MONTHLY_AVERAGE_TABLE AS (
     SELECT
@@ -169,7 +172,9 @@ limit 5
 ```
 
 ### query 3
-
+For any given hour find the top 10 cities with the highest daily average levels of particle
+air pollution (PM2.5) and provide the mean, median and mode measures of carbon
+monoxide (CO) and sulphur dioxide pollution (SO2) for those cities on that day.
 ```
 WITH hourly_average_table AS (
     SELECT
@@ -226,7 +231,10 @@ where
 ```
 
 ### query 4
-
+For any given hour report an air quality index for each country. While you are free to
+compute this index in the manner that you see fit, it must take into account measures of
+particle air pollution, sulphur dioxide pollution, and carbon monoxide pollution. The index
+must have 3 discrete levels (high, moderate, and low).
 ```
 WITH hourly_average_table AS (
     SELECT
