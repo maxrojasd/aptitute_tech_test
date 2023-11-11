@@ -1,45 +1,104 @@
+from pyspark.sql import SparkSession
 
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 
-# Functions
-def get_input_date(timeframe):
-    while True:
-        input_date = input('(MM-YYYY): ')
-        try:
-            # Transform date to page source format
-            # Split date
-            trans_date = datetime.strptime(input_date, '%m-%Y')
-            year = trans_date.year
-            # Get month as text
-            month_str = trans_date.strftime('%B')
-            # Get month as number
-            month_int = int(trans_date.strftime('%m'))
-            print(f'{timeframe} date is {month_str} of {year}')
-            return year, month_int
-        except ValueError:
-            print('Date in incorrect format, please try again with format (MM-YYYY): ')
-            continue
+def create_table_schema(df, redshift_table_name):
+    # Create a temp view of the df
+    df.createOrReplaceTempView("temp_view")
 
-# Function to create timeframe for the period selected
-def get_timeframe(init_year, init_month,final_year, final_month):
-    timeframe = {}
-    # Create datatime objects
-    init_date = datetime(init_year, init_month, 1)
-    final_date = datetime(final_year, final_month, 1)
+    # Get the schema for the
+    schema_info = spark.sql("DESCRIBE temp_view")
 
-    # Generate the timeframe elements
-    while init_date <= final_date:
-        year = init_date.year
-        month = init_date.strftime('%m')
+    # Create columns with datatype list
+    columns = [
+        f"{row['col_name']} {row['data_type']}" for row in schema_info.collect()]
 
-        # Add the elements to the corresponding dict
-        if year in timeframe:
-            timeframe[year].append(month)
-        else:
-            timeframe[year] = [month]
+    # Create initial sql query
+    create_table_sql = f"CREATE TABLE IF NOT EXISTS {redshift_table_name} (" + ",".join(
+        columns) + ");"
 
-        # Monthly counter
-        init_date += relativedelta(months=1)
+    # Fixing format for some variables in the string
+    create_table_sql = create_table_sql.replace('array<double>', 'VARCHAR(255)')\
+        .replace('string', 'VARCHAR(255)')\
+        .replace('double', 'FLOAT')
 
-    return timeframe
+    return create_table_sql.replace('array<double>', 'VARCHAR(255)').replace('string', 'VARCHAR(255)')
+
+
+def create_insert_statements(df, redshift_table_name, target_chunk_size_bytes=90 * 1024):
+    # Get column names
+    columns = df.columns
+
+    # Create initial sql query
+    insert_sql = f"INSERT INTO {redshift_table_name} ({', '.join(columns)}) VALUES "
+
+    # Generate placeholders for values in the INSERT statement
+    value_placeholders = '(' + ', '.join(['%s' for _ in columns]) + ')'
+
+    # Collect data from df
+    data = df.collect()
+
+    insert_statements = []
+    chunk = [insert_sql]
+    size = len(insert_sql.encode('utf-8'))
+
+    for row in data:
+        # Create a single sql query
+        value_to_insert = value_placeholders % tuple(row)
+
+        # Calculate the size of the current INSERT statement in bytes
+        current_insert_size = len(value_to_insert.encode('utf-8'))
+
+        # Check if chunk exceed the size
+        if size + current_insert_size > target_chunk_size_bytes:
+            insert_statements.append(chunk)
+            chunk = [insert_sql]
+            size = len(insert_sql.encode('utf-8'))
+
+        chunk.append(value_to_insert)
+        size += current_insert_size
+
+    # Add all extra to last chunk
+    if len(chunk) > 1:
+        insert_statements.append(chunk)
+
+    return insert_statements
+
+def extract_values(record):
+    # Extract values from Redshift's response
+    values = []
+    for item in record:
+        for key in item:
+            if key.endswith('Value'):
+                values.append(item[key])
+            elif key == 'isNull' and item[key]:
+                values.append(None)
+    return values
+
+def get_df_from_redshift_query(query_id):
+    
+    # Check Results
+    redshift_data_client.get_statement_result(Id=query_id)
+    # Get the results of the query
+    response = redshift_data_client.get_statement_result(Id=query_id)
+
+    # Extract the column names from the metadata
+    columns = [metadata['name'] for metadata in response['ColumnMetadata']]
+
+    # Extract the data from the records
+    data = [extract_values(record) for record in response['Records']]
+
+    # Define Schema for Pyspark dataframe
+    schema = StructType([StructField(name, StringType(), True) for name in columns])
+
+    # Create a PySpark DataFrame
+    new_redshift_table_df = spark.createDataFrame(data, schema=schema)
+
+    return new_redshift_table_df
+
+def execute_redshift_query(cluster, db, query):
+  response_query = redshift_data_client.execute_statement(
+    ClusterIdentifier= cluster,
+    Database=db,
+    Sql= query
+  )
+  return response_query
